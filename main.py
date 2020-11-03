@@ -19,7 +19,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import shutil
-from fastai.vision import load_learner, open_image, download_images
+from fastai.vision import load_learner, open_image
 import pickle
 
 app = FastAPI()

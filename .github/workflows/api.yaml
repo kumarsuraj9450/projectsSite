@@ -6,12 +6,20 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+          python-version: 3.7
+          conda-channels: anaconda, conda-forge
+      - run: conda --version
+      - run: which python
       - name: cml_run
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Your ML workflow goes here
-          pip install --upgrade pip setuptools wheel
+          #pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
           
           uvicorn main:app
