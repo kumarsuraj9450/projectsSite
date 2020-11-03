@@ -1,7 +1,7 @@
 name: testing-api
 on: [push]
 jobs:
-  api_test:
+  apiTest:
     runs-on: [ubuntu-latest]
     container: docker://dvcorg/cml-py3:latest
     steps:
@@ -11,6 +11,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Your ML workflow goes here
-          python install -r requirements.txt
+          pip install -r requirements.txt
           
           uvicorn main:app
