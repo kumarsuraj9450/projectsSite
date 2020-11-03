@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Item Details{% endblock %}
+
+{% block body %}
+	<div class="alert alert-primary" role="alert">
+ 	    <h1>Item ID: {{ id }}</h1>
+ 	    {% if q %}
+        <h1>Query String: {{ q }}</h1>
+    	{% endif %}
+	</div>
+{% endblock %}
