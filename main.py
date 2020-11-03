@@ -71,7 +71,7 @@ def predict(name):
 		print(url)
 		learner = load_learner('.',r'stage-1-export-file.pkl')
 
-		print(learner.data.classes)
+		# print(learner.data.classes)
 		
 		im = open_image(url)
 		data = []
@@ -79,7 +79,7 @@ def predict(name):
 			data = pickle.load(d)
 		res = learner.predict(im)
 		predictedClass = data[res[1]]
-		print(predictedClass)
+		# print(predictedClass)
 	except Exception as e:
 		predictedClass = f'Unknown Error occured {e}'
 	return predictedClass
@@ -93,16 +93,14 @@ def post_item(request: Request, files: UploadFile = File(...)):
 	except:
 		raise HTTPException(status_code=404, detail="Something wrong with the file uploaded file")
 
-	with open(f"static/{files.filename}", "wb") as buffer:
+	with open(f"static/userFiles/{files.filename}", "wb") as buffer:
 		shutil.copyfileobj(files.file, buffer)
 	
-	pred = predict(f"\\static\\{files.filename}")
-
-	# print(pred)
+	pred = predict(f"\\static\\userFiles\\{files.filename}")
 	
 	return templates.TemplateResponse("vision.html", 
 		{"request": request, 
-		"image":f"static/{files.filename}", 
+		"image":f"static/userFiles/{files.filename}", 
 		"file":files.filename , 
 		"prediction":pred}
 		)
