@@ -1,4 +1,4 @@
-name: your-workflow-name
+name: testing-api
 on: [push]
 jobs:
   api_test:
