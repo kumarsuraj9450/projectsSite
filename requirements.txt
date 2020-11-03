@@ -1,4 +1,4 @@
-fastai==1.0.61
+fastai
 fastapi
 uvicorn
 aiofiles
