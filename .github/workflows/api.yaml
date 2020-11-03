@@ -12,8 +12,6 @@ jobs:
           update-conda: true
           python-version: 3.7
           conda-channels: anaconda, conda-forge
-      - run: conda --version
-      - run: which python
       - name: cml_run
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
