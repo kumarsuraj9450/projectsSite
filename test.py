@@ -1,7 +1,7 @@
-from fastai.vision import load_learner, open_image, download_images
+from fastai.vision import load_learner, open_image
 
-import os
-import pickle
+from os import getcwd
+from pickle load
 
 cwd = os.getcwd()
 
@@ -17,7 +17,7 @@ learner = load_learner('.',r'stage-1-export-file.pkl')
 im = open_image(url)
 
 with open('classes.pkl', 'rb') as f:
-    data = pickle.load(f)
+    data = load(f)
 
 res = learner.predict(im)
 predictedClass = data[res[1]]

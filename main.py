@@ -1,5 +1,5 @@
 from typing import Optional, List
-import os
+from os import getcwd
 # from fastapi import FastAPI
 
 # app = FastAPI()
@@ -18,9 +18,9 @@ from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import shutil
+from shutil import copyfileobj
 from fastai.vision import load_learner, open_image
-import pickle
+from pickle import load
 
 app = FastAPI()
 
@@ -28,7 +28,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
-cwd = os.getcwd()
+cwd = getcwd()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -76,7 +76,7 @@ def predict(name):
 		im = open_image(url)
 		data = []
 		with open('classes.pkl','rb') as d:
-			data = pickle.load(d)
+			data = load(d)
 		res = learner.predict(im)
 		predictedClass = data[res[1]]
 		# print(predictedClass)
@@ -94,7 +94,7 @@ def post_item(request: Request, files: UploadFile = File(...)):
 		raise HTTPException(status_code=404, detail="Something wrong with the file uploaded file")
 
 	with open(f"static/userFiles/{files.filename}", "wb") as buffer:
-		shutil.copyfileobj(files.file, buffer)
+		copyfileobj(files.file, buffer)
 	
 	pred = predict(f"\\static\\userFiles\\{files.filename}")
 	
