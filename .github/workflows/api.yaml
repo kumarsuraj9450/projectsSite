@@ -15,8 +15,8 @@ jobs:
         run: |
           # Your ML workflow goes here
           #pip install --upgrade pip setuptools wheel
-          pip install -r req.txt
-          
+          # pip install -r req.txt
+          $CONDA/bin/conda env update --file environment.yml --name fastai
           uvicorn main:app
 
 
