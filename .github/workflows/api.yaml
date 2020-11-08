@@ -15,7 +15,7 @@ jobs:
         run: |
           # Your ML workflow goes here
           #pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          pip install -r req.txt
           
           uvicorn main:app
 
