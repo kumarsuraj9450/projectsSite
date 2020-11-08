@@ -1,5 +1,5 @@
+wheel
 fastapi
 uvicorn
 aiofiles
-wheel
 fastai<2
