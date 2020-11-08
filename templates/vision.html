@@ -3,8 +3,17 @@
 {% block title %}Predictions{% endblock %}
 
 {% block body %}
-
-<img src="{{image}}" height = "100" width = "100">
+<div class="jumbotron jumbotron-fluid text-center">
+	<div class="container text-center">
+<div class="col-13 ">
+<img src="{{image}}" height = "200" width = "100">
+</br>
+</br>
 <h3>{{file}}</h3>
+</br>
 <h3>{{prediction}}</h3>
+</div>
+</div>
+</div>
+
 {% endblock %}

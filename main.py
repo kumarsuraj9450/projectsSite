@@ -1,20 +1,6 @@
 from typing import Optional, List
-from os import getcwd
-from os.path import basename
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-
-# @app.get("/")
-# def read_root():
-#     return {"Hello": "World"}
-
-
-# @app.get("/items/{item_id}")
-# def read_item(item_id: int, q: Optional[str] = None):
-#     return {"item_id": item_id, "q": q}
-
+from os import getcwd, remove
+from os.path import basename, isfile
 from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -33,7 +19,6 @@ templates = Jinja2Templates(directory="templates")
 
 cwd = getcwd()
 
-
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
 	content = r"go to /item/{id}?q={query+string}"
@@ -46,7 +31,7 @@ def read_item(request: Request, q: Optional[str] = None):
 
 
 @app.get("/items/{id}", response_class=HTMLResponse)
-def read_item(request: Request, id: int, q: Optional[str] = None):
+def read_item_with_id(request: Request, id: int, q: Optional[str] = None):
 	return templates.TemplateResponse("item.html", {"request": request, "id": id, 'q': q})
 
 
@@ -64,11 +49,11 @@ content = """
 
 
 @app.get("/classification", response_class=HTMLResponse)
-def read_item(request: Request):
+def read_image(request: Request):
 	return templates.TemplateResponse("classification.html", {"request": request})
     # return HTMLResponse(content=content)
 
-def predict(name):
+def predict(name: str):
 	try:
 		url = cwd+name
 		print(url)
@@ -85,11 +70,11 @@ def predict(name):
 		# print(predictedClass)
 	except Exception as e:
 		predictedClass = f'Unknown Error occured {e}'
-	return predictedClass
+	return predictedClass,url
 
 
 @app.post("/classification", response_class=HTMLResponse)
-def post_item(request: Request, files: UploadFile = File(...)):
+def post_image(request: Request, files: UploadFile = File(...)):
 	try:
 		if not "image" in str(files.content_type):
 			raise HTTPException(status_code=404, detail="Not an image file")
@@ -99,8 +84,10 @@ def post_item(request: Request, files: UploadFile = File(...)):
 	with open(f"static/userFiles/{files.filename}", "wb") as buffer:
 		copyfileobj(files.file, buffer)
 	
-	pred = predict(f"\\static\\userFiles\\{files.filename}")
-	
+	pred,url = predict(f"\\static\\userFiles\\{files.filename}")
+
+	# if isfile(url):
+	# 	remove(url)
 	return templates.TemplateResponse("vision.html", 
 		{"request": request, 
 		"image":f"static/userFiles/{files.filename}", 
@@ -123,21 +110,20 @@ def post_url(request: Request, files: str = Form(...)):
 		if not "image" in resp.headers['content-type'] : 
 			del resp
 			raise HTTPException(status_code=404, detail="Not an image file")
-		
+
 		a = urlparse(files)
 		name = basename(a.path)
 		with open(f"static/userFiles/{name}", 'wb') as local_file:
 			resp.raw.decode_content = True
 			copyfileobj(resp.raw, local_file)
 
-		pred = predict(f"\\static\\userFiles\\{name}")
-		# local_file = open(name, 'wb')
-		# resp.raw.decode_content = True
-		# copyfileobj(resp.raw, local_file)
-		# local_file.close()
+		pred, url = predict(f"\\static\\userFiles\\{name}")
+
+		# if isfile(url):
+		# 	remove(url)
+
 	except:
-		url = "Nothing happend"
-		return {'res':"OMG"}
+		return {'error':"Something went wrong while classifying url"}
 	# return files
 
 	return templates.TemplateResponse("vision.html", 
