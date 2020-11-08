@@ -15,7 +15,7 @@ jobs:
         run: |
           # Your ML workflow goes here
           pip install --upgrade pip setuptools wheel
-          pip install fastai==1.0.61
+          pip install -Iv fastai==1.0.59
           pip install -r requirements.txt
           
           uvicorn main:app
