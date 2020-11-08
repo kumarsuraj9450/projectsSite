@@ -16,8 +16,8 @@ jobs:
           environment-file: environment.yml
           auto-activate-base: false
       - name: cml_run
-        env:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
+#         env:
+#         repo_token: ${{ secrets.GITHUB_TOKEN }}
         shell: bash -l {0}
         run: |
           conda info
