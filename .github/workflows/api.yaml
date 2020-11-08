@@ -9,20 +9,31 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v1.7.0
-        with:
-          activate-environment: fastai
-          environment-file: environment.yml
-          auto-activate-base: false
       - name: cml_run
         env:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash -l {0}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          conda info
+
+          # Your ML workflow goes here
+          pip install -r requirements.txt
           uvicorn main:app
-        # run: |
+
+    # steps:
+    #   - uses: actions/checkout@v2
+    #   - name: Setup Miniconda
+    #     uses: conda-incubator/setup-miniconda@v1.7.0
+    #     with:
+    #       activate-environment: fastai
+    #       environment-file: environment.yml
+    #       auto-activate-base: false
+    #   - name: cml_run
+    #     # env:
+    #     # repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #     shell: bash -l {0}
+    #     run: |
+    #       conda info
+    #       uvicorn main:app
+    #     # run: |
 
         #   # Your ML workflow goes here
         #   #pip install --upgrade pip setuptools wheel
