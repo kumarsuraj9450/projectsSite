@@ -1,23 +1,14 @@
 name: testing-api
-on: [push]
+on: 
+  push:
+    branches:
+      - workflow-test
 jobs:
   apiTest:
     runs-on: [ubuntu-latest]
     container: docker://dvcorg/cml-py3:latest
-     steps:
+    steps:
       - uses: actions/checkout@v2
-      - name: Conda setup
-        uses: s-weigand/setup-conda@v1.0.3
-        with:
-          update-conda: true
-          python-version: 3.7
-      # env activation as suggested by @s-weigand
-      - name: Conda environment creation
-        run: |
-          conda env create -f environment.yml
-          source activate fastai
-          # pip install -e .
-
       - name: cml_run
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -43,3 +34,15 @@ jobs:
     #       python-version: 3.7
     #   - run: conda --version
     #   - run: which python
+
+      #     - name: Conda setup
+      #   uses: s-weigand/setup-conda@v1.0.3
+      #   with:
+      #     update-conda: true
+      #     python-version: 3.7
+      # # env activation as suggested by @s-weigand
+      # - name: Conda environment creation
+      #   run: |
+      #     conda env create -f environment.yml
+      #     source activate fastai
+      #     # pip install -e .
