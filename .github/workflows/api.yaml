@@ -6,11 +6,13 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
         with:
           python-version: 3.7
-          conda-channels: anaconda, conda-forge
+      - uses: s-weigand/setup-conda@v1
+      - run: conda --version
+      - run: which python
       - name: cml_run
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
