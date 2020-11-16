@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Predictions{% endblock %}
+
+{% block body %}
+<div class="jumbotron jumbotron-fluid text-center">
+	<div class="container text-center">
+<div class="col-13 ">
+<a href="{{image}}" > <img src="{{image}}" height = "500" width = "500"> </a>
+</br>
+</br>
+<h3>Download segmentation <a href="{{code}}" >code file</a></h3>
+</br>
+<h3>Download segmented <a href="{{image}}" >image</a></h3>
+</br>
+<h3>Download tensor <a href="{{file}}" >file</a></h3>
+
+</div>
+</div>
+</div>
+
+{% endblock %}
