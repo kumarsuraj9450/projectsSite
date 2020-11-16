@@ -1,20 +1,6 @@
 from typing import Optional, List
-from os import getcwd
-from os.path import basename
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-
-# @app.get("/")
-# def read_root():
-#     return {"Hello": "World"}
-
-
-# @app.get("/items/{item_id}")
-# def read_item(item_id: int, q: Optional[str] = None):
-#     return {"item_id": item_id, "q": q}
-
+from os import getcwd, remove
+from os.path import basename, isfile
 from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +10,8 @@ from fastai.vision import load_learner, open_image
 from pickle import load
 import requests
 from urllib.parse import urlparse
+import numpy as np
+from torch import save
 
 app = FastAPI()
 
@@ -32,7 +20,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 cwd = getcwd()
-
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -46,7 +33,7 @@ def read_item(request: Request, q: Optional[str] = None):
 
 
 @app.get("/items/{id}", response_class=HTMLResponse)
-def read_item(request: Request, id: int, q: Optional[str] = None):
+def read_item_with_id(request: Request, id: int, q: Optional[str] = None):
 	return templates.TemplateResponse("item.html", {"request": request, "id": id, 'q': q})
 
 
@@ -62,34 +49,33 @@ content = """
 		</body>
 		"""
 
-
-@app.get("/classification", response_class=HTMLResponse)
-def read_item(request: Request):
-	return templates.TemplateResponse("classification.html", {"request": request})
-    # return HTMLResponse(content=content)
-
-def predict(name):
+def classify(name: str):
 	try:
 		url = cwd+name
 		print(url)
-		learner = load_learner('.',r'stage-1-export-file.pkl')
+		learner = load_learner(cwd+r'\static',r'classification.pkl')
 
 		# print(learner.data.classes)
 		
 		im = open_image(url)
 		data = []
-		with open('classes.pkl','rb') as d:
+		with open('./static/classes.pkl','rb') as d:
 			data = load(d)
+
 		res = learner.predict(im)
 		predictedClass = data[res[1]]
 		# print(predictedClass)
 	except Exception as e:
 		predictedClass = f'Unknown Error occured {e}'
-	return predictedClass
+	return predictedClass,url
 
+@app.get("/classification", response_class=HTMLResponse)
+def read_image(request: Request):
+	return templates.TemplateResponse("classification_form.html", {"request": request})
+    # return HTMLResponse(content=content)
 
 @app.post("/classification", response_class=HTMLResponse)
-def post_item(request: Request, files: UploadFile = File(...)):
+def post_image(request: Request, files: UploadFile = File(...)):
 	try:
 		if not "image" in str(files.content_type):
 			raise HTTPException(status_code=404, detail="Not an image file")
@@ -99,9 +85,11 @@ def post_item(request: Request, files: UploadFile = File(...)):
 	with open(f"static/userFiles/{files.filename}", "wb") as buffer:
 		copyfileobj(files.file, buffer)
 	
-	pred = predict(f"\\static\\userFiles\\{files.filename}")
-	
-	return templates.TemplateResponse("vision.html", 
+	pred,url = classify(f"\\static\\userFiles\\{files.filename}")
+
+	# if isfile(url):
+	# 	remove(url)
+	return templates.TemplateResponse("classify_result.html", 
 		{"request": request, 
 		"image":f"static/userFiles/{files.filename}", 
 		"file":files.filename , 
@@ -112,7 +100,7 @@ def post_item(request: Request, files: UploadFile = File(...)):
 
 @app.get("/classify_url", response_class=HTMLResponse)
 def read_url(request: Request):
-	return templates.TemplateResponse("classify_url.html", {"request": request})
+	return templates.TemplateResponse("classify_url_form.html", {"request": request})
 
 @app.post("/classify_url")
 def post_url(request: Request, files: str = Form(...)):
@@ -123,26 +111,81 @@ def post_url(request: Request, files: str = Form(...)):
 		if not "image" in resp.headers['content-type'] : 
 			del resp
 			raise HTTPException(status_code=404, detail="Not an image file")
-		
+
 		a = urlparse(files)
 		name = basename(a.path)
 		with open(f"static/userFiles/{name}", 'wb') as local_file:
 			resp.raw.decode_content = True
 			copyfileobj(resp.raw, local_file)
 
-		pred = predict(f"\\static\\userFiles\\{name}")
-		# local_file = open(name, 'wb')
-		# resp.raw.decode_content = True
-		# copyfileobj(resp.raw, local_file)
-		# local_file.close()
+		pred, url = classify(f"\\static\\userFiles\\{name}")
+
+		# if isfile(url):
+		# 	remove(url)
+
 	except:
-		url = "Nothing happend"
-		return {'res':"OMG"}
+		return {'error':"Something went wrong while classifying url"}
 	# return files
 
-	return templates.TemplateResponse("vision.html", 
+	return templates.TemplateResponse("classify_result.html", 
 		{"request": request, 
 		"image":f"static/userFiles/{name}", 
 		"file":name , 
 		"prediction":pred}
+		)
+
+
+def segment(path: str, name: str):
+	# pass
+	# path = Path(r"/static")
+	# name = r"\static\userFiles\BingWallpaper.jpg"
+	url = cwd+path
+
+	def acc_camvid(input, target):
+	    target = target.squeeze(1)
+	    mask = target != void_code
+	    return (input.argmax(dim=1)[mask]==target[mask]).float().mean()
+
+
+	learn = load_learner(cwd+r'\static', "segmentation")
+
+	im = open_image(url)
+
+	data = learn.predict(im)
+
+	data[0].save(cwd+f'\\static\\segment\\{name}.png')
+
+	save(data[1], cwd+f'\\static\\segment\\{name}.pt')
+
+
+@app.get("/segment", response_class=HTMLResponse)
+def read_url(request: Request):
+	return templates.TemplateResponse("segment_form.html", {"request": request, "code": "static/codes.txt"})
+
+@app.post("/segment")
+def post_url(request: Request, files: UploadFile = File(...)):
+	print(type(files))
+
+	try:
+		if not "image" in str(files.content_type):
+			raise HTTPException(status_code=404, detail="Not an image file")
+	except:
+		raise HTTPException(status_code=404, detail="Not an image file")
+
+	with open(f"static/userFiles/{files.filename}", "wb") as buffer:
+		copyfileobj(files.file, buffer)
+
+	name = files.filename.split(".")[0]
+	segment(f"\\static\\userFiles\\{files.filename}", f'{name}')
+
+		# if isfile(url):
+		# 	remove(url)
+	# return files
+
+	return templates.TemplateResponse("segment_result.html", 
+		{"request": request, 
+		"code": f"static/codes.txt",
+		"image":f"static/segment/{name}.png", 
+		"file":f"static/segment/{name}.pt"
+		}
 		)
