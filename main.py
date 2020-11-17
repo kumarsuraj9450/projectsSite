@@ -136,9 +136,6 @@ def post_url(request: Request, files: str = Form(...)):
 
 
 def segment(path: str, name: str):
-	# pass
-	# path = Path(r"/static")
-	# name = r"\static\userFiles\BingWallpaper.jpg"
 	url = cwd+path
 
 	def acc_camvid(input, target):
@@ -156,6 +153,9 @@ def segment(path: str, name: str):
 	data[0].save(cwd+f'\\static\\segment\\{name}.png')
 
 	save(data[1], cwd+f'\\static\\segment\\{name}.pt')
+		# pass
+	# path = Path(r"/static")
+	# name = r"\static\userFiles\BingWallpaper.jpg"
 
 
 @app.get("/segment", response_class=HTMLResponse)
@@ -180,6 +180,46 @@ def post_url(request: Request, files: UploadFile = File(...)):
 
 		# if isfile(url):
 		# 	remove(url)
+	# return files
+
+	return templates.TemplateResponse("segment_result.html", 
+		{"request": request, 
+		"code": f"static/codes.txt",
+		"image":f"static/segment/{name}.png", 
+		"file":f"static/segment/{name}.pt"
+		}
+		)
+
+
+@app.get("/segment_url", response_class=HTMLResponse)
+def read_url(request: Request):
+	return templates.TemplateResponse("segment_url_form.html", {"request": request, "code": "static/codes.txt"})
+
+
+@app.post("/segment_url", response_class=HTMLResponse)
+def post_url(request: Request, files: str = Form(...)):
+	print(type(files))
+	try:
+		resp = requests.get(files, stream=True)
+
+		if not "image" in resp.headers['content-type'] : 
+			del resp
+			raise HTTPException(status_code=404, detail="Not an image file")
+
+		a = urlparse(files)
+		name = basename(a.path)
+		with open(f"static/userFiles/{name}", 'wb') as local_file:
+			resp.raw.decode_content = True
+			copyfileobj(resp.raw, local_file)
+
+		segment(f"\\static\\userFiles\\{name}", f"{name.split('.')[0]}")
+
+		# if isfile(url):
+		# 	remove(url)
+		name = name.split('.')[0]
+
+	except:
+		return {'error':"Something went wrong while segmeting url"}
 	# return files
 
 	return templates.TemplateResponse("segment_result.html", 
